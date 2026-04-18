@@ -1,4 +1,4 @@
-# CUDA Unified Memory Latency Profiler
+ # CUDA Unified Memory Latency Profiler
 
 > A systematic, multi-dimensional characterization of NVIDIA CUDA Unified Memory (UM) page-migration overhead — measuring how buffer size, access patterns, prefetch hints, memory-advice APIs, and concurrent CPU+GPU contention affect data-movement latency on modern Ampere GPUs.
 
@@ -62,6 +62,8 @@ This profiler answers the following concrete research questions:
 - 30 runs per size; confidence intervals from ±1σ
 - Metric: post-migration overhead = `Latency_post − Latency_baseline`
 
+![Latency vs Buffer Size](plots/latency_vs_size.png)
+
 ### EXP 2 — Access Patterns (`patterns.csv`)
 
 **Hypothesis:** Random access triggers significantly more TLB misses per migrated byte than sequential access, amplifying the fault-handling cost.
@@ -73,6 +75,8 @@ This profiler answers the following concrete research questions:
   - **Random** — LCG-hashed scatter, worst-case TLB pressure
 - 50 runs; full distribution captured via violin plots
 
+![Access Patterns](plots/patterns_comparison.png)
+
 ### EXP 3 — Prefetch Benefit (`prefetch.csv`)
 
 **Hypothesis:** Asynchronous prefetching eliminates on-demand page-fault overhead by overlapping PCIe DMA with CPU-side computation.
@@ -82,6 +86,8 @@ This profiler answers the following concrete research questions:
   - **On-demand:** kernel triggers page faults for each page
   - **Explicit prefetch:** `cudaMemPrefetchAsync(data, size, device)` called before kernel launch
 - Speedup = `T_on_demand / T_prefetch`
+
+![Prefetch Benefit](plots/prefetch_benefit.png)
 
 ### EXP 4 — Memory Advice (`advice.csv`)
 
@@ -95,6 +101,8 @@ Tested hints on a 64 MB buffer:
 | **ReadMostly** | Driver may **duplicate** pages; CPU reads avoid faults |
 | **PreferredLocation (GPU)** | GPU pages default to GPU DRAM; CPU gets remote access |
 | **AccessedBy (CPU)** | CPU is given a **hardware-assisted direct mapping** |
+
+![Memory Advice](plots/advice_comparison.png)
 
 ### EXP 5 — Concurrent CPU+GPU Contention (`concurrent.csv`)
 
